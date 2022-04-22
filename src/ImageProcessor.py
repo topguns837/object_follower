@@ -49,14 +49,17 @@ class ImageProcessor() :
             M = cv2.moments(c)
             self.centre = (int(M["m10"] / M["m00"]) , int(M["m01"] / M["m00"]))        
             
+            xcentre = (int(self.image.shape[0] / 2) , int(self.image.shape[1] / 2) )
 
-            cv2.circle(self.image , (int(self.image.shape[0] / 2) , int(self.image.shape[1] / 2) ) , 5 , (255,0,0) , -1)
+            print(abs(xcentre[0] - self.centre[0]))
+
+            cv2.circle(self.image , xcentre , 5 , (255,0,0) , -1)
 
             if self.radius > 0:
                 cv2.circle(self.image, self.centre , int(self.radius) , (0,255,255) , 2)  
                 cv2.circle(self.image , self.centre , 5 , (0,0,255) , -1)
             
-            
+        
 
         return [self.image ,self.mask ,  self.centre , self.radius]
 
