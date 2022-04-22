@@ -28,7 +28,7 @@ class ImageProcessor() :
         #self.dy = 0
         #self.dirx = ""
         #self.diry = ""
-        #self.direction = ""
+        self.direction = None
 
         self.centre = None
         self.radius = None
@@ -47,14 +47,17 @@ class ImageProcessor() :
             ((x,y) , self.radius) = cv2.minEnclosingCircle(c)
             
             M = cv2.moments(c)
-            self.centre = (int(M["m10"] / M["m00"]) , int(M["m01"] / M["m00"]))        # https://math.libretexts.org/Bookshelves/Calculus/Book%3A_Calculus_(OpenStax)/06%3A_Applications_of_Integration/6.6%3A_Moments_and_Centers_of_Mass
-            #center = (int(x) , int(y) )       
-            #self.centre = center
-            #self.radius = radius
+            self.centre = (int(M["m10"] / M["m00"]) , int(M["m01"] / M["m00"]))        
+            
+
+            cv2.circle(self.image , (int(self.image.shape[0] / 2) , int(self.image.shape[1] / 2) ) , 5 , (255,0,0) , -1)
 
             if self.radius > 0:
-                cv2.circle(self.image, self.centre , int(self.radius) , (0,255,255) , 2)  # Circle around the object (last value is the thickness)
-                cv2.circle(self.image , self.centre , 5 , (0,0,255) , -1) 
+                cv2.circle(self.image, self.centre , int(self.radius) , (0,255,255) , 2)  
+                cv2.circle(self.image , self.centre , 5 , (0,0,255) , -1)
+            
+            
+
         return [self.image ,self.mask ,  self.centre , self.radius]
 
 
