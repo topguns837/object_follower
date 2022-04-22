@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 from __future__ import print_function
 
 
@@ -24,6 +25,8 @@ class Object_Follower:
 
             #while cv_image is not None :
 
+            #hsv = cv2.cvtColor(cv_image , cv2.COLOR_BGR2HSV)
+
             cv2.imshow("Image" , cv_image)
             cv2.waitKey(1)
                
@@ -31,14 +34,7 @@ class Object_Follower:
         except CvBridgeError as e:
             print(e)
  
-        '''(rows,cols,channels) = cv_image.shape
-        if cols > 60 and rows > 60 :
-            cv2.circle(cv_image, (50,50), 10, 255)
- 
-            cv2.imshow("Image window", cv_image)
-            
-            cv2.waitKey(3)
-        '''
+        
         
 def main(args):
     ic = Object_Follower() 
