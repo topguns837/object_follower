@@ -9,6 +9,7 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Twist
+import numpy as np
 
 class Object_Follower: 
     def __init__(self):        
@@ -16,7 +17,10 @@ class Object_Follower:
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/rrbot/camera1/image_raw",Image,self.callback)
         self.cv_image = None
+
         self.angle_tolerance = 75
+        self.radius_tolerance = 100
+
         self.xcentre = None
         self.result = None
         self.velocity_msg = Twist()
@@ -45,10 +49,22 @@ class Object_Follower:
 
         if self.result[2][0] > self.xcentre + self.angle_tolerance or self.result[2][0] < self.xcentre - self.angle_tolerance :
             self.fix_yaw()
+        
+        if self.result[-1] < self.radius_tolerance :
+            self.move_forward()
+
+    def move_forward(self) :
+        if self.result[-1] < self.radius_tolerance :
+            self.velocity_msg.linear.x = 0.1
+            self.pub.publish(self.velocity_msg)
+        
 
     def fix_yaw(self) :
+
+        self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre) * (0.1)
+        self.pub.publish(self.velocity_msg)
  
-        if self.result[2][0] > self.xcentre + self.angle_tolerance :
+        '''if self.result[2][0] > self.xcentre + self.angle_tolerance :
             self.velocity_msg.angular.z = - 0.1
             self.pub.publish(self.velocity_msg)
             #self.move(0,self.P*-1*orien_error)
@@ -62,7 +78,7 @@ class Object_Follower:
         else :
             self.velocity_msg.angular.z = 0.0
             self.pub.publish(self.velocity_msg)
-
+        '''
 
  
         
