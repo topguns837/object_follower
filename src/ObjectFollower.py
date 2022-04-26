@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 from ImageProcessor import ImageProcessor
 import sys
 import rospy
@@ -10,6 +9,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Twist
 import numpy as np
+
 
 class Object_Follower: 
     def __init__(self):        
@@ -40,6 +40,7 @@ class Object_Follower:
     def control_loop(self) :
         ip = ImageProcessor()
         self.result = ip.object_detector(self.cv_image)    
+        self.radius = self.result[-1]
         
         
         cv2.imshow("result" , self.result[0])               
@@ -47,11 +48,31 @@ class Object_Follower:
 
         self.xcentre = self.result[0].shape[0] / 2
 
-        if self.result[2][0] > self.xcentre + self.angle_tolerance or self.result[2][0] < self.xcentre - self.angle_tolerance :
-            self.fix_yaw()
+        cond1 = self.result[2][0] > self.xcentre or self.result[2][0] < self.xcentre
+        cond2 = self.radius < self.radius_tolerance
+
+        if cond1 and cond2 :
+            #self.fix_yaw()
+            self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre) * (0.1)            
+            self.velocity_msg.linear.x = 0.1       
+                
+            
+        elif (not cond1) and (cond2) :
+            self.velocity_msg.angular.z = 0            
+            self.velocity_msg.linear.x = 0.1
+           
+            
+         else :
+            self.velocity_msg.linear.x = 0
+            self.velocity_msg.angular.z = 0
+
+        self.pub.publish(self.velocity_msg)
+
+            
+
         
-        if self.result[-1] < self.radius_tolerance :
-            self.move_forward()
+        #if self.result[-1] < self.radius_tolerance :
+            #self.move_forward()
 
     def move_forward(self) :
         if self.result[-1] < self.radius_tolerance :
