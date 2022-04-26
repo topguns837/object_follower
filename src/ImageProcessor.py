@@ -52,7 +52,7 @@ class ImageProcessor() :
             xcentre = (int(self.image.shape[0] / 2) , int(self.image.shape[1] / 2) )
 
             #print(abs(xcentre[0] - self.centre[0]))
-            print(self.radius)
+            #print(self.radius)
 
             cv2.circle(self.image , xcentre , 5 , (255,0,0) , -1)
 

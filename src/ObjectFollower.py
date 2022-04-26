@@ -18,7 +18,7 @@ class Object_Follower:
         self.image_sub = rospy.Subscriber("/rrbot/camera1/image_raw",Image,self.callback)
         self.cv_image = None
 
-        self.angle_tolerance = 75
+        self.angle_tolerance = 150
         self.radius_tolerance = 100
 
         self.xcentre = None
@@ -43,30 +43,47 @@ class Object_Follower:
         self.radius = self.result[-1]
         
         
-        cv2.imshow("result" , self.result[0])               
-        cv2.waitKey(1)
+        
 
         self.xcentre = self.result[0].shape[0] / 2
 
-        cond1 = self.result[2][0] > self.xcentre or self.result[2][0] < self.xcentre
+        cond1 = (self.xcentre > self.result[2][0] + self.radius) or (self.xcentre < self.result[2][0] - self.radius )
         cond2 = self.radius < self.radius_tolerance
 
         if cond1 and cond2 :
             #self.fix_yaw()
-            self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre) * (0.1)            
-            self.velocity_msg.linear.x = 0.1       
+            print("1")
+            self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre) * (0.3)            
+            self.velocity_msg.linear.x = 0.3      
                 
             
         elif (not cond1) and (cond2) :
+            print("2")
             self.velocity_msg.angular.z = 0            
-            self.velocity_msg.linear.x = 0.1
-           
-            
-         else :
+            self.velocity_msg.linear.x = 0.3
+        
+        elif (not cond2) and (cond1) :
+            print("3")
+            self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre) * (0.1)            
+            self.velocity_msg.linear.x = 0.0 
+
+        else :
+            print("4")
             self.velocity_msg.linear.x = 0
             self.velocity_msg.angular.z = 0
 
+        '''elif (not cond2) and (cond1) :
+            print("3")
+            self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre) * (0.1)            
+            self.velocity_msg.linear.x = 0.0 ''' 
+
+   
+
         self.pub.publish(self.velocity_msg)
+
+        cv2.imshow("Detected_Objects" , self.result[0])   
+        cv2.imshow("Positions_Detector" , self.result[1])            
+        cv2.waitKey(1)
 
             
 
@@ -105,9 +122,9 @@ class Object_Follower:
         
         
 def main(args):
-    of = Object_Follower() 
-       
     rospy.init_node('image_converter', anonymous=True)
+    of = Object_Follower()        
+    
 
     try:        
         rospy.spin()
