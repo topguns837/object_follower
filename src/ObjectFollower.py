@@ -27,6 +27,11 @@ class Object_Follower:
 
         #self.odom = OdomSubscriber()
         self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+
+        self.angular_text = ""
+        self.linear_text = ""
+
+        
         
  
     def callback(self,data):
@@ -44,91 +49,81 @@ class Object_Follower:
         if self.result[-1] == None :
             self.velocity_msg.linear.x = 0
             self.velocity_msg.angular.z = 0
-        else:
 
+            self.angular_text = "No object Found !"
+            self.linear_text = " "
+        else:
+            self.mask = self.result[1]
 
             self.radius = self.result[-1]      
         
         
 
             self.xcentre = self.result[0].shape[0] / 2
+            
 
             cond1 = (self.xcentre > self.result[2][0] + self.radius) or (self.xcentre < self.result[2][0] - self.radius)
             cond2 = self.radius < self.radius_tolerance
 
-            if cond1 and cond2 :
-                #self.fix_yaw()
-                print("1")
+            if cond1 and cond2 :                
                 self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre) * (0.3)            
-                self.velocity_msg.linear.x = 0.5     
+                self.velocity_msg.linear.x = 0.5             
                 
-            
-            elif (not cond1) and (cond2) :
-                print("2")
+            elif (not cond1) and (cond2) :                
                 self.velocity_msg.angular.z = 0            
-                self.velocity_msg.linear.x = 0.5
+                self.velocity_msg.linear.x = 0.5                
 
-            elif (not cond2) and (cond1) :
-                print("3")
+            elif (not cond2) and (cond1) :                
                 self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre + self.radius ) * (0.1)            
-                self.velocity_msg.linear.x = 0.0 
+                self.velocity_msg.linear.x = 0.0         
             
-
-            else :
-                print("4")
+            else :                
                 self.velocity_msg.linear.x = 0
                 self.velocity_msg.angular.z = 0
+
+
+
+            if self.velocity_msg.angular.z < 0 :
+                self.angular_text = "Go Right =====>>>"
+            elif self.velocity_msg.angular.z > 0:
+                self.angular_text = "Go Left <<<====="
+            else:
+                self.angular_text = "Centre" 
+
+
+            if self.velocity_msg.linear.x > 0:
+                self.linear_text = "Forward"
+            else:
+                self.linear_text = "Stop"
         
             
-            
+        self.pub.publish(self.velocity_msg)    
 
         
 
-   
+               
+        cv2.putText(self.result[0] , self.angular_text , (350,50) , cv2.FONT_HERSHEY_SIMPLEX , 1 , (255, 0, 0) , 2 , cv2.LINE_AA)
+        cv2.putText(self.result[0] , self.linear_text , (350,700) , cv2.FONT_HERSHEY_SIMPLEX , 1 , (0, 255, 0) , 2 , cv2.LINE_AA)
 
-        self.pub.publish(self.velocity_msg)
 
-        cv2.imshow("Detected_Objects" , self.result[0])   
-        cv2.imshow("Positions_Detector" , self.result[1])            
+        cv2.line(self.result[1] , (int(self.xcentre) , 0) , (int(self.xcentre) ,self.result[0].shape[1] ) , (255,0,0) , 5)
+        cv2.imshow("Positions_Detector" , self.result[1]) 
+        cv2.imshow("Detected_Objects" , self.result[0])         
+        
+                   
         cv2.waitKey(1)
 
             
 
         
-        #if self.result[-1] < self.radius_tolerance :
-            #self.move_forward()
-
-    def move_forward(self) :
-        if self.result[-1] < self.radius_tolerance :
-            self.velocity_msg.linear.x = 0.1
-            self.pub.publish(self.velocity_msg)
         
 
-    def fix_yaw(self) :
+    
 
-        self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre) * (0.1)
-        self.pub.publish(self.velocity_msg)
+
+    
  
-        '''if self.result[2][0] > self.xcentre + self.angle_tolerance :
-            self.velocity_msg.angular.z = - 0.1
-            self.pub.publish(self.velocity_msg)
-            #self.move(0,self.P*-1*orien_error)
-
-
-        elif self.result[2][0] < self.xcentre - self.angle_tolerance :
-            #print("move left")
-            self.velocity_msg.angular.z = 0.1
-            self.pub.publish(self.velocity_msg)
-
-        else :
-            self.velocity_msg.angular.z = 0.0
-            self.pub.publish(self.velocity_msg)
-        '''
-
- 
-        
-        
-def main(args):
+if __name__ == '__main__':
     rospy.init_node('obj_follower', anonymous=True)
     of = Object_Follower()        
     
@@ -138,9 +133,7 @@ def main(args):
     except KeyboardInterrupt:
         print("Shutting down")
     cv2.destroyAllWindows()
- 
-if __name__ == '__main__':
-     main(sys.argv)
+    
 
 
 
