@@ -27,6 +27,11 @@ class Object_Follower:
 
         #self.odom = OdomSubscriber()
         self.pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+
+        self.angular_P = 0.03
+        self.linear_P = 0.3
+
+        
         
  
     def callback(self,data):
@@ -42,12 +47,18 @@ class Object_Follower:
         self.result = ip.object_detector(self.cv_image)  
 
         if self.result[-1] == None :
-            pass
+            self.velocity_msg.angular.z = 0
+            self.velocity_msg.linear.x = 0
         else:
-            self.velocity_msg.angular.z = self.give_angular_error()
+            self.radius = self.result[-1]
+            self.xcentre = self.result[0].shape[0] / 2
+
+            self.velocity_msg.angular.z =self.give_angular_error()
             self.velocity_msg.linear.x = self.give_linear_error()         
 
    
+            print("Linear Velocity : ",self.velocity_msg.linear.x)
+            print("Angular Velocity : ",self.velocity_msg.angular.z)
 
         self.pub.publish(self.velocity_msg)
 
@@ -55,11 +66,28 @@ class Object_Follower:
         cv2.imshow("Positions_Detector" , self.result[1])            
         cv2.waitKey(1)
         
-        #if self.result[-1] < self.radius_tolerance :
-            #self.move_forward()
+           
 
     def give_angular_error(self) :
-        
+        cond1 = (self.xcentre > self.result[2][0] + self.radius - self.angle_tolerance) or (self.xcentre < self.result[2][0] - self.radius + self.angle_tolerance)
+
+        if cond1 :
+            return ( np.sign(self.result[2][0] - self.xcentre) * (1/(self.angular_P)) )
+        else:
+            return(0)
+    
+    def give_linear_error(self) :
+        cond2 = self.radius > self.radius_tolerance
+
+        if cond2 :
+            return ( (self.result[-1] - self.radius_tolerance )*self.linear_P )
+        else:
+            return ( 0 )
+
+            
+
+
+
 
 
     def move_forward(self) :
