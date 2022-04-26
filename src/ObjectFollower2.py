@@ -44,44 +44,8 @@ class Object_Follower:
         if self.result[-1] == None :
             pass
         else:
-
-
-            self.radius = self.result[-1]
-        
-        
-        
-
-            self.xcentre = self.result[0].shape[0] / 2
-
-            cond1 = (self.xcentre > self.result[2][0] + self.radius - self.angle_tolerance) or (self.xcentre < self.result[2][0] - self.radius + self.angle_tolerance)
-            cond2 = self.radius < self.radius_tolerance
-
-            if cond1 and cond2 :
-                #self.fix_yaw()
-                print("1")
-                self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre) * (0.3)            
-                self.velocity_msg.linear.x = 0.3      
-                
-            
-            elif (not cond1) and (cond2) :
-                print("2")
-                self.velocity_msg.angular.z = 0            
-                self.velocity_msg.linear.x = 0.3
-        
-            elif (not cond2) and (cond1) :
-                print("3")
-                self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre + self.radius ) * (0.1)            
-                self.velocity_msg.linear.x = 0.0 
-
-            else :
-                print("4")
-                self.velocity_msg.linear.x = 0
-                self.velocity_msg.angular.z = 0
-
-        '''elif (not cond2) and (cond1) :
-            print("3")
-            self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre) * (0.1)            
-            self.velocity_msg.linear.x = 0.0 ''' 
+            self.velocity_msg.angular.z = self.give_angular_error()
+            self.velocity_msg.linear.x = self.give_linear_error()         
 
    
 
@@ -90,12 +54,13 @@ class Object_Follower:
         cv2.imshow("Detected_Objects" , self.result[0])   
         cv2.imshow("Positions_Detector" , self.result[1])            
         cv2.waitKey(1)
-
-            
-
         
         #if self.result[-1] < self.radius_tolerance :
             #self.move_forward()
+
+    def give_angular_error(self) :
+        
+
 
     def move_forward(self) :
         if self.result[-1] < self.radius_tolerance :
@@ -128,7 +93,7 @@ class Object_Follower:
         
         
 def main(args):
-    rospy.init_node('obj_follower', anonymous=True)
+    rospy.init_node('obj_follower2', anonymous=True)
     of = Object_Follower()        
     
 
