@@ -9,7 +9,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Twist
 import numpy as np
-import math
+
 
 class Object_Follower: 
     def __init__(self):        
@@ -30,8 +30,6 @@ class Object_Follower:
 
         self.angular_text = ""
         self.linear_text = ""
-
-        self.P = 0.020
 
         
         
@@ -68,12 +66,12 @@ class Object_Follower:
             cond2 = self.radius < self.radius_tolerance
 
             if cond1 and cond2 :                
-                self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre) * (0.2)            
-                self.velocity_msg.linear.x = min((self.radius_tolerance - self.radius)*self.P,0.85)     
+                self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre) * (0.3)            
+                self.velocity_msg.linear.x = 0.75             
                 
             elif (not cond1) and (cond2) :                
                 self.velocity_msg.angular.z = 0            
-                self.velocity_msg.linear.x = min((self.radius_tolerance - self.radius)*self.P,1)                    
+                self.velocity_msg.linear.x = 0.75                
 
             elif (not cond2) and (cond1) :                
                 self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre + self.radius ) * (0.3)            
