@@ -67,14 +67,14 @@ class Object_Follower:
 
             if cond1 and cond2 :                
                 self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre) * (0.3)            
-                self.velocity_msg.linear.x = 0.5             
+                self.velocity_msg.linear.x = 0.75             
                 
             elif (not cond1) and (cond2) :                
                 self.velocity_msg.angular.z = 0            
-                self.velocity_msg.linear.x = 0.5                
+                self.velocity_msg.linear.x = 0.75                
 
             elif (not cond2) and (cond1) :                
-                self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre + self.radius ) * (0.1)            
+                self.velocity_msg.angular.z = (-1) * np.sign(self.result[2][0] - self.xcentre + self.radius ) * (0.3)            
                 self.velocity_msg.linear.x = 0.0         
             
             else :                
@@ -105,9 +105,22 @@ class Object_Follower:
         cv2.putText(self.result[0] , self.angular_text , (350,50) , cv2.FONT_HERSHEY_SIMPLEX , 1 , (255, 0, 0) , 2 , cv2.LINE_AA)
         cv2.putText(self.result[0] , self.linear_text , (350,700) , cv2.FONT_HERSHEY_SIMPLEX , 1 , (0, 255, 0) , 2 , cv2.LINE_AA)
 
+        
 
-        cv2.line(self.result[1] , (int(self.xcentre) , 0) , (int(self.xcentre) ,self.result[0].shape[1] ) , (255,0,0) , 5)
-        cv2.imshow("Positions_Detector" , self.result[1]) 
+
+        #cv2.line(self.result[1] , (int(self.xcentre) , 0) , (int(self.xcentre) ,self.result[0].shape[1] ) , (255,0,0) , 5)
+        
+        coloured_mask = self.cv_image.copy()
+        coloured_mask[self.result[1] > 0] = (0,255,0)
+        coloured_mask[self.result[1] == 0] = [0,0,0]
+
+        cv2.line(coloured_mask , (int(self.xcentre) , 0) , (int(self.xcentre) ,self.result[0].shape[1] ) , (255,0,0) , 5)
+
+        try :
+            cv2.putText(coloured_mask , "Area of circle : {}".format(np.round(np.pi*(self.result[-1]**2)),2), (50,50) , cv2.FONT_HERSHEY_SIMPLEX , 1 ,(255,0,0) , 2 , cv2.LINE_AA)
+        except :
+            pass
+        cv2.imshow("Positions_Detector" , coloured_mask) 
         cv2.imshow("Detected_Objects" , self.result[0])         
         
                    
