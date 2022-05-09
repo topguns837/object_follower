@@ -10,6 +10,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Twist
 import numpy as np
 import math
+from sensor_msgs.msg import LaserScan
 
 class Object_Follower: 
     def __init__(self):        
@@ -32,6 +33,8 @@ class Object_Follower:
         self.linear_text = ""
 
         self.P = 0.020
+
+        self.laser_sub = rospy.Subscriber('/laser/scan', LaserScan, self.laser_callback)
 
         
         
@@ -127,6 +130,14 @@ class Object_Follower:
         
                    
         cv2.waitKey(1)
+
+    def laser_scan(self):
+        self.laser_sub = rospy.Subscriber('/laser/scan', LaserScan, self.laser_callback)
+    
+    def laser_callback(self,data) :
+        print(data.ranges)
+
+
 
             
 
