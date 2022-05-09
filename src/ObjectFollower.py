@@ -135,7 +135,10 @@ class Object_Follower:
         self.laser_sub = rospy.Subscriber('/laser/scan', LaserScan, self.laser_callback)
     
     def laser_callback(self,data) :
-        print(data.ranges)
+        #data_ranges = list(data.ranges)
+        data_ranges = [-1 if x == np.inf else x for x in list(data.ranges)]
+        distance = max(data_ranges[0:11] + data_ranges[len(data.ranges)-10 : len(data.ranges)])
+        print(distance)
 
 
 
